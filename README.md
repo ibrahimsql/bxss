@@ -36,6 +36,27 @@ Bxss is a high-performance Blind XSS scanner that automates the detection of bli
 
 ---
 
+
+## 🧠 In Progress
+
+We're actively working on integrating a **Chromium-based worker pool** to enhance the performance of `bxss` on **low-end devices**.
+
+This feature will allow resource-intensive tasks, like DOM-based XSS detection or post-trigger payload inspection, to be offloaded to lightweight Chromium instances managed via a pool. By distributing the workload across multiple headless browser contexts in a controlled and efficient manner, `bxss` will remain responsive and usable even on lower-spec machines.
+
+This will make `bxss` not only powerful but also highly accessible, regardless of system constraints.
+
+---
+
+## ✅ TODOs
+- [ ] Chromium-based worker pool for DOM interaction and visual verification
+- [ ] Optional HTML/JSON reporting output
+- [ ] Add support for multi-platform payload customization (XSS Hunter, Interactsh, etc.)
+- [ ] Proxy support
+- [ ] Import custom requests
+
+---
+
+
 ## 🧪 Experimental Features
 - Trace mode (experimental)
 
