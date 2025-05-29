@@ -123,7 +123,11 @@ func (p *RequestParser) ProcessCustomRequests(limiter *rate.Limiter, payloads []
 	parser := browser.NewRequestParser(p.filePath)
 
 	// Create browser context for executing requests
-	b := browser.NewBrowser("chrome", "") // Default to Chrome
+	browserType := "chrome" // Default fallback
+	if p.args != nil && p.args.BrowserType != "" {
+		browserType = p.args.BrowserType
+	}
+	b := browser.NewBrowser(browserType, "")
 	ctx, cancel, err := b.CreateContext(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to create browser context: %w", err)
@@ -142,7 +146,9 @@ func (p *RequestParser) ProcessCustomRequests(limiter *rate.Limiter, payloads []
 
 	// Clean up responses
 	for _, resp := range responses {
-		resp.Body.Close()
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
 	}
 
 	return nil

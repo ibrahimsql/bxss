@@ -137,23 +137,30 @@ func (b *Browser) CreateContext(ctx context.Context) (context.Context, context.C
 			chromedp.WindowSize(1920, 1080),
 		)
 
-		allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
-		defer cancel() // İlk cancel'ı kullan
+		allocCtx, allocCancel := chromedp.NewExecAllocator(ctx, opts...)
+		// Don't defer cancel here - the allocator context must live as long as the browser context
+		
 		browserCtx, _ := chromedp.NewContext(allocCtx, chromedp.WithLogf(func(format string, args ...interface{}) {
 			// Suppress chromedp logs unless in debug mode
 		}))
 
 		// Add a timeout for browser operations
 		browserCtx, timeoutCancel := context.WithTimeout(browserCtx, 10*time.Second)
-		defer timeoutCancel() // timeout cancel'ı da kullan
+		// Don't defer here either - we're returning this context
 
 		// Ensure browser is started
 		if err := chromedp.Run(browserCtx, chromedp.Navigate("about:blank")); err != nil {
+			allocCancel()
 			timeoutCancel()
 			return nil, nil, fmt.Errorf("failed to start browser: %w", err)
 		}
 
-		return browserCtx, timeoutCancel, nil
+		// Return a cancel function that cleans up both contexts
+		combinedCancel := func() {
+			timeoutCancel()
+			allocCancel()
+		}
+		return browserCtx, combinedCancel, nil
 
 	case Firefox:
 		// Currently, chromedp doesn't support Firefox directly
